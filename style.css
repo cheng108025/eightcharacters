@@ -4,3 +4,7 @@
 .image-container >#p2{
     clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
 }
+
+#c{
+    display: none;
+}
