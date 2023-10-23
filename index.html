@@ -8,6 +8,52 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="password-form">
+        <label for="password">請輸入密碼：</label>
+        <input type="password" id="password">
+        <button onclick="checkPassword()">提交</button>
+    </div>
+
+
+    <h1>本網站只供個人瀏覽使用</h1>
+
+    
+    ──────▄▄▄█▄▄█▄▄█▄▄▄ ────────▄▀▀═════════════▀▀▄ ───────█═══════════════════█ ──────█═════════════════════█ ─────█═══▄▄▄▄▄▄▄═══▄▄▄▄▄▄▄═══█ ────█═══█████████═█████████═══█ ────█══██▀────▀█████▀────▀██══█ ───██████──█▀█──███──█▀█──██████ ───██████──▀▀▀──███──▀▀▀──██████ ────█══▀█▄────▄██─██▄────▄█▀══█ ────█════▀█████▀───▀█████▀════█ ────█═════════════════════════█ ────█═════════════════════════█ ────█═══════▀▄▄▄▄▄▄▄▄▄▀═══════█ ────█═════════════════════════█ ───▐▓▓▌═════════════════════▐▓▓▌ ───▐▐▓▓▌▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▐▓▓▌▌ ───█══▐▓▄▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▄▓▌══█ ──█══▌═▐▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▌═▐══█ ──█══█═▐▓▓▓▓▓▓▄▄▄▄▄▄▄▓▓▓▓▓▓▌═█══█ ──█══█═▐▓▓▓▓▓▓▐██▀██▌▓▓▓▓▓▓▌═█══█ ──█══█═▐▓▓▓▓▓▓▓▀▀▀▀▀▓▓▓▓▓▓▓▌═█══█ ──█══█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█══█ ─▄█══█▐▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▌█══█▄ ─█████▐▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▌─█████ ─██████▐▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▌─██████ ──▀█▀█──▐▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▌───█▀█▀ ─────────▐▓▓▓▓▓▓▌▐▓▓▓▓▓▓▌ ──────────▐▓▓▓▓▌──▐▓▓▓▓▌ ─────────▄████▀────▀████▄─────
+
+
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div><div>文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+<div style="display: none;">文字文字</div>
+
+    <div id="c">
+       
+    
     <h1>學八字 這本最好用</h1>
 
 
@@ -282,5 +328,35 @@
 
 </div>
         </div>
+    </div>
+
+    <script>
+        
+        
+        
+        const password = "eight"; // 密碼
+
+        function checkPassword() {
+            const passwordInput = document.getElementById("password");
+            const passwordForm = document.getElementById("password-form");
+            const content = document.getElementById("c");
+
+            if (passwordInput.value === password) {
+                passwordForm.style.display = "none";
+                content.style.display = "block";
+            } else {
+                alert("密碼錯誤請重試");
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
 </body>
 </html>
