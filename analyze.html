@@ -47,10 +47,10 @@
 </header>
 
 <div class="pillar-grid">
-  <div class="pillar"><label>年柱(長上/父母)</label><select id="s0"></select><select id="b0"></select></div>
-  <div class="pillar"><label>月柱(自己/兄弟)</label><select id="s1"></select><select id="b1"></select></div>
-  <div class="pillar"><label>日柱(自己/配偶)</label><select id="s2"></select><select id="b2"></select></div>
   <div class="pillar"><label>時柱(子女/事業)</label><select id="s3"></select><select id="b3"></select></div>
+  <div class="pillar"><label>日柱(自己/配偶)</label><select id="s2"></select><select id="b2"></select></div>
+  <div class="pillar"><label>月柱(自己/兄弟)</label><select id="s1"></select><select id="b1"></select></div>
+  <div class="pillar"><label>年柱(長上/父母)</label><select id="s0"></select><select id="b0"></select></div>
 </div>
 <button id="run">分 析</button>
 
@@ -182,10 +182,10 @@ function analyze() {
   };
 
   // 命盤
-  sec('你的命盤', ['<span class="tag">年 ' + stems[0] + branches[0] + '</span>' +
-    '<span class="tag">月 ' + stems[1] + branches[1] + '</span>' +
+  sec('你的命盤', ['<span class="tag">時 ' + stems[3] + branches[3] + '</span>' +
     '<span class="tag">日 ' + stems[2] + branches[2] + '</span>' +
-    '<span class="tag">時 ' + stems[3] + branches[3] + '</span>' +
+    '<span class="tag">月 ' + stems[1] + branches[1] + '</span>' +
+    '<span class="tag">年 ' + stems[0] + branches[0] + '</span>' +
     ' 日主:<b>' + day + ELEM[day] + '</b>']);
 
   // 日主個性
