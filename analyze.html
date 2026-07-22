@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八字快速分析</title>
+<link rel="stylesheet" href="bootstrap-grid.min.css">
+<link rel="stylesheet" href="style.css">
+<style>
+.pillar-grid { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+.pillar {
+    background: #fff; border: 1px solid #e3dcc9; border-radius: 10px;
+    padding: 1rem 1.2rem; text-align: center; flex: 1; min-width: 10rem;
+}
+.pillar label { display: block; color: #6b4f2a; font-weight: bold; margin-bottom: .5rem; }
+.pillar select {
+    font-size: 28px; font-family: inherit; padding: .3rem .6rem; margin: .2rem;
+    border: 1px solid #c9a86a; border-radius: 6px; background: #faf8f2; color: #333;
+}
+#run {
+    font-size: 32px; font-family: inherit; cursor: pointer;
+    background: #c9a86a; color: #fff; border: none; border-radius: 10px;
+    padding: .6rem 3rem; display: block; margin: 1.5rem auto;
+}
+#run:hover { background: #b5763a; }
+.result-card {
+    background: #fff; border: 1px solid #e3dcc9; border-radius: 10px;
+    margin: 1rem 0; padding: 1rem 1.8rem; box-shadow: 0 1px 3px rgba(107,79,42,.08);
+}
+.result-card h2 { border-left: 5px solid #c9a86a; padding-left: .6rem; color: #6b4f2a; }
+.tag {
+    display: inline-block; background: #f6efe0; border: 1px solid #c9a86a;
+    border-radius: 6px; padding: 0 .6rem; margin-right: .4rem; color: #6b4f2a;
+}
+.back { display: inline-block; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+<div class="container-fluid">
+<div class="row">
+<div class="col-10 offset-1">
+
+<header>
+<h1>八字快速分析</h1>
+<p class="disclaimer">輸入四柱八字,依本站筆記規則自動判讀個性與心理狀態。內容為個人學習筆記之整理,僅供參考娛樂,非商業用途。</p>
+<a class="back" href="eight.html">← 回筆記首頁</a>
+</header>
+
+<div class="pillar-grid">
+  <div class="pillar"><label>年柱(長上/父母)</label><select id="s0"></select><select id="b0"></select></div>
+  <div class="pillar"><label>月柱(自己/兄弟)</label><select id="s1"></select><select id="b1"></select></div>
+  <div class="pillar"><label>日柱(自己/配偶)</label><select id="s2"></select><select id="b2"></select></div>
+  <div class="pillar"><label>時柱(子女/事業)</label><select id="s3"></select><select id="b3"></select></div>
+</div>
+<button id="run">分 析</button>
+
+<div id="result"></div>
+
+</div>
+</div>
+</div>
+<a class="top" href="#" title="回頂部">▲</a>
+
+<script>
+// ===== 基礎資料 =====
+const STEMS = '甲乙丙丁戊己庚辛壬癸';
+const BRANCHES = '子丑寅卯辰巳午未申酉戌亥';
+const ELEM = { 甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水' };
+const YANG = '甲丙戊庚壬';
+const GEN = { 木:'火',火:'土',土:'金',金:'水',水:'木' };   // 我生
+const KE  = { 木:'土',土:'水',水:'火',火:'金',金:'木' };   // 我剋
+const PILLAR_NAME = ['年柱','月柱','日柱','時柱'];
+const PALACE = ['長上/父母','自己/兄弟','配偶','子女/事業'];
+
+// ===== 日主個性(濃縮自筆記) =====
+const DAYMASTER = {
+甲:'【參天大樹】天生領導格、不甘居人下;腳踏實地、刻苦耐勞、心地善良,能扛責任會照顧人,吃軟不吃硬。心太軟易被利用;不懂妥協、過於主觀,壓力累積過頭會崩潰。心理課題:防「傲慢」,學會謙卑低頭。',
+乙:'【花草藤蔓】幕後軍師型:善謀略、沉著有彈性、順勢而為;表面柔弱內在韌性極強,困境也能存活。心軟怕人情壓力、想太多易三心二意、佔有慾強。心理課題:建立自信,別因誘惑或人情失去方向。',
+丙:'【太陽之火】熱情熱心、積極主動、天生公關;交友滿天下知心無幾人;易發脾氣但消氣快。有口無心、不會拒絕人、記性差常心不在焉;照亮別人,獨處時卻感孤單。心理課題:學會收斂與拒絕。',
+丁:'【燈燭之火】外表沉穩、內心急躁;直覺強、能洞察人心,看別人準卻看不清自己;感情豐富但不善表達(悶騷型)。愛憎分明、易猜忌、翻臉如翻書,常被最親近的人所傷。心理課題:恨鐵不成鋼易傷心,宜虛心沉澱。',
+戊:'【高山之土】固執而不自覺、外柔內剛;極重誠信、答應必做到;默默耕耘卻常不受賞識,「做到流汗被嫌到流涎」,覺得懷才不遇。愛面子、喜被稱讚、嫉妒心強會明白表達。心理課題:化解「怨」,別以自我為中心。',
+己:'【田園濕土】可塑性強、交友廣;重義氣好溝通,外表溫和內帶猜忌叛逆;「無法形容的固執」,寧願將錯就錯。易怯場但酒後判若兩人;嫉妒心強但不外露。心理課題:缺安全感、內心複雜矛盾,學會安心與轉念。',
+庚:'【大斧之金】講義氣、是非分明、果斷勇決、不畏強權;有話直說易得罪人;刀子嘴豆腐心、不欠人情。太講義氣反害自己、答應太快考慮不周。心理課題:煩惱多,學習能屈能伸的柔軟度。',
+辛:'【珠玉之金】溫文儒雅有貴氣、口才佳、循序漸進追求理想;一生為錢煩惱,有錢煩沒錢也煩;神經質明顯、睡眠品質差;表現兩極,不是大好就是大壞。心理課題:想太多假設太多,宜中庸之道自我調和。',
+壬:'【江海之水】才智高、膽大心細、交際廣、反應靈敏,是最佳業務員;賺錢快虧錢也快、野心大。只信自己聽不進意見、做事直接欠深思。心理課題:圓融中帶任性、易怠惰依賴,防聰明反被聰明誤。',
+癸:'【雨露之水】聰明、外冷內熱、忍功一流如滴水穿石;內向保守、節儉有潔癖;感情脆弱、有點神經質、喜幻想。大小事都要管、好「煩」。心理課題:思慮過多易悲觀,最重要是懂得「捨」,有捨才有得。'
+};
+
+// ===== 月支性情(濃縮自筆記) =====
+const MONTH_PERSONALITY = {
+子:'機靈精算:機警善變、聰明絕頂,但個性極端、反覆不定;精於計算卻常因小利誤大局;決策慢、決定後又常反悔。心理:一日多變、猶豫不決,宜訓練「決定了就不後悔」。',
+丑:'善良耐操:任勞任怨、腳踏實地、追求安定;打破砂鍋問到底、主觀重;愛翻舊帳、會查行蹤。心理:易碎碎唸、鑽牛角尖、忍辱負重把實力藏起來。',
+寅:'能幹耐勞:衝動派、好動愛自由、不服輸愛當老大;完美主義、責任感強、目標必達;單打獨鬥本事高。心理:爆發力強但後繼無力、受壓抑有「虎落平陽」之嘆、最恨被騙。',
+卯:'保護色強:智慧高、完美主義、防衛性強;文靜愛乾淨有潔癖;眼光高、氣質好、異性緣佳。心理:只能接受成功、難面對失敗,做事易有始無終;心軟又會計較。',
+辰:'捉摸不定:愛當老大、點子多、多才多藝學什麼像什麼;好面子愛聽好話;神祕感重、內心不易被察覺。心理:好高騖遠、做事易有頭無尾、想離開常不告而別。',
+巳:'心思細密:分析力強、數字概念清楚、善理財是生意好手;外表冷漠內心如火;猜疑心重、城府深。心理:被觸怒後反撲力強;沒舞台很沉靜、有舞台滔滔不絕;遇挫折易放棄。',
+午:'憨直膽大:敢衝敢拼、對朋友熱情、樂觀有人緣;好勝心強、禁不起刺激;午為桃花,人緣異性緣佳。心理:自尊心強又帶自卑感、受刺激脾氣一發不可收拾、遇臨時狀況易亂了方寸。',
+未:'特立獨行:親切富人情味、行事謹慎一絲不苟;孝順但不擅表達;對感情專注忠貞。心理:膽小缺安全感、想當領導卻須依附他人;希望別人認同卻不明說,用問題慢慢扭轉對方。',
+申:'機靈過人:好動有衝勁、重義氣、觀察敏銳、學習模仿力強;急性子想到就做、沒心機。心理:猴急沒耐心、嘴快講話銳利易傷人而不自知。',
+酉:'熱心雞婆:熱心服務、審美觀好、第六感強;自信心自尊心虛榮心都強、喜被讚美。心理:過度熱心幫人卻不被感謝而鬱悶、不會拒絕請託、講話欠思考、藏不住話。',
+戌:'忠心顧家:善良固執、重感情、從一而終;福報好常逢凶化吉;愛照顧別人、受恩加倍償還。心理:死心眼易被戀愛沖昏頭、自尊心極強、鐵齒不好溝通、老走舊模式。',
+亥:'癡情重原則:很有智慧、善借力使力是生意高手;口才好、有開創力、會扮豬吃老虎。心理:外剛內脆弱、有事悶在心裡、愛鑽牛角尖;自刑最重,不可用言語刺激,嚴重易走極端。'
+};
+
+// ===== 月支健康 =====
+const MONTH_HEALTH = {
+子:'膽/泌尿系統',丑:'肝/腳',寅:'肺/腿',卯:'大腸/脅',辰:'胃/二膊',巳:'脾/肩膀',
+午:'心臟/頭',未:'小腸/肩膀',申:'膀胱/二膊',酉:'腎/脅',戌:'心包/腿',亥:'三焦/腳'
+};
+
+// ===== 身強身弱(日干五行 × 月支群) =====
+const STRENGTH = {
+木:{寅卯辰:'強',巳午未:'弱',申酉戌:'弱',亥子丑:'強'},
+火:{寅卯辰:'強',巳午未:'強',申酉戌:'弱',亥子丑:'弱'},
+土:{寅卯辰:'弱',巳午未:'強',申酉戌:'弱',亥子丑:'弱'},
+金:{寅卯辰:'弱',巳午未:'弱',申酉戌:'強',亥子丑:'弱'},
+水:{寅卯辰:'弱',巳午未:'弱',申酉戌:'強',亥子丑:'強'}
+};
+
+// ===== 天干五合 =====
+const STEM_COMBO = {
+'甲己':'合化土(中正之合):講信用但固執,老好人型、一板一眼、人緣佳',
+'乙庚':'合化金(仁義之合):重義氣有仁德,剛強果斷積極,生活規律但缺情趣',
+'丙辛':'合化水(威制之合):個性強儀表威嚴,重情趣心靈感受,人緣好但易有感情糾葛',
+'丁壬':'合化木(淫暱之合):心軟無心機、重品味穿著、異性緣特別好、心慈性善',
+'戊癸':'合化火(無情之合):重情調做人乾脆,婚配常見年齡差距大,冷靜理智較現實'
+};
+
+// ===== 地支關係 =====
+const SIX_COMBO = { 子丑:'合土:好溝通有話講、較愛面子', 寅亥:'合木:重視倫理道德', 卯戌:'合火:愛面子重外表、顧家、外強內柔', 辰酉:'合金:重義氣但定性不足', 巳申:'合水:事情多、聰明反被聰明誤(帶刑)', 午未:'合火:重情意、做事憑感覺、天生脾氣較差' };
+const SIX_CLASH = { 子午:'(桃花沖)情緒不穩、個性極端,嚴重易腦神經衰弱;但人緣異性緣佳', 丑未:'(庫沖)鑽牛角尖、財庫沖開開銷大易賠錢', 寅申:'(馬沖)勞碌閒不住、開車快有車關、六親緣薄靠自己', 卯酉:'(桃花沖)敏銳有第六感、人緣好但心性不定', 辰戌:'(庫沖)投資易失敗、愛自圓其說、開銷大', 巳亥:'(馬沖)辯才無礙但禍從口出、有車關' };
+const SIX_HARM = { 子未:'最重的害:個性極端易犯小人、貌合神離、親子早分離', 丑午:'耐性差、易生氣脾氣不好', 寅巳:'是非多無恩情、易犯小人、在家待不住', 卯辰:'易遭親人所害、好友扯後腿', 申亥:'是非多、「相見不如懷念」見面就吵不見又想念', 酉戌:'易被近親戲弄、雞犬不寧' };
+const PUNISH = [
+ { set:['子','卯'], name:'無禮之刑', desc:'自視清高、講話直接沒禮貌;剋損六親,人際易緊張' },
+ { set:['寅','巳','申'], name:'恃勢之刑', desc:'替人打江山做憨工、累死沒人感激;易遭陷害,做事十分力留三分' },
+ { set:['丑','戌','未'], name:'無恩之刑', desc:'過度自信太猛進易受挫;過度信任人而事與願違' }
+];
+const SELF_PUNISH = { 辰:'固執受不了言語刺激、懷才不遇、有頭無尾(鬱悶型)', 午:'好勝吃軟不吃硬、極端沒耐性健忘', 酉:'熱心反被誤解、太過熱情反變憂鬱', 亥:'有事悶著不說、易悲觀無理取鬧;最重,注意輕生念頭' };
+const TRI_COMBO = { 申子辰:'水局:頭腦靈活多變,但偏冷漠易臨時變卦', 巳酉丑:'金局:有領導力講義氣,外表威嚴帶肅殺、易血光', 寅午戌:'火局:熱情行動派,但前熱後冷三分鐘熱度', 亥卯未:'木局:心軟愛幻想、計畫多但不切實際' };
+const TRI_MEET = { 寅卯辰:'東方木', 巳午未:'南方火', 申酉戌:'西方金', 亥子丑:'北方水' };
+
+// ===== 馬花庫 =====
+const HORSE = '寅申巳亥', FLOWER = '子午卯酉', VAULT = '辰戌丑未';
+const HORSE_MSG = ['沒衝勁,適合內勤','好動適合業務、靈機應變不受拘束','業務高手、行動執行力強,閒不住、注意車關','藝高膽大勞碌奔波,只衝不懂收成、多車關','家裡待不住、馬不停蹄,車關多居無定所'];
+const FLOWER_MSG = ['嚴肅臉臭、異性緣較弱','有人緣、早熟','真有人緣、異性緣不錯','異性緣特別重、適合公關,文才風流','兩極:超有人緣(防濫桃花)或自戀孤芳自賞;雙重人格傾向'];
+const VAULT_MSG = ['錢財守不住、財來財去','節儉自己、慷慨別人','善於調度金錢會理財(庫逢沖則難聚財)','很會賺錢但財易分散、借錢不敢要回','極端:「不是皇帝命就是乞丐命」,身強賺盡天下財、身弱散盡天下財'];
+
+// ===== 十神 =====
+const TEN_GOD_DESC = {
+比肩:'獨立自主重朋友;自信有主見、對朋友情義真摯;太旺則頑固、不易信任人、有抗上之心',
+劫財:'外交口才佳、應變行動力強敢冒險;雙重性格陰晴不定、對朋友過度慷慨、易因朋友破財',
+食神:'斯文有歡喜心;溫文儒雅寬容厚道、專精一技、有口福;理想過高易脫離現實、思慮過旺傷神',
+傷官:'才華洋溢、聰明善辯、創意豐富;適合用口才的行業;恃才傲物、聽不進忠言、愛出風頭易招是非',
+正財:'節儉重信用、腳踏實地、家庭責任感重;重物質輕精神、保守缺突破魄力',
+偏財:'慷慨豪邁、圓滑機智、把握賺錢機會;不珍惜金錢、易沉迷享樂、感情不專',
+正官:'品行端正、負責重信、有管理能力受人信任;一板一眼、優柔寡斷、易坐失良機',
+七殺:'威嚴果斷、勇於開創、有領導權威;爭強好勝、猜忌多疑、易樹敵、活得費力',
+正印:'氣質優雅、寬容善良、重學問修養、常得貴人提拔;清高輕財、易脫離現實、愛面子',
+偏印:'思考細膩、點子多反應快、企畫創造有獨到見解;內向多疑、三心二意、愛唱反調、不易贊同別人'
+};
+
+function tenGod(dayStem, other) {
+  const de = ELEM[dayStem], oe = ELEM[other];
+  const same = (YANG.includes(dayStem) === YANG.includes(other));
+  if (de === oe) return same ? '比肩' : '劫財';
+  if (GEN[de] === oe) return same ? '食神' : '傷官';
+  if (KE[de] === oe) return same ? '偏財' : '正財';
+  if (KE[oe] === de) return same ? '七殺' : '正官';
+  return same ? '偏印' : '正印';
+}
+
+// ===== 分析 =====
+function analyze() {
+  const stems = [0,1,2,3].map(i => document.getElementById('s'+i).value);
+  const branches = [0,1,2,3].map(i => document.getElementById('b'+i).value);
+  const day = stems[2], month = branches[1];
+  const out = [];
+  const sec = (title, items) => {
+    if (!items.length) return;
+    out.push('<div class="result-card"><h2>' + title + '</h2>' +
+      items.map(t => '<p>' + t + '</p>').join('') + '</div>');
+  };
+
+  // 命盤
+  sec('你的命盤', ['<span class="tag">年 ' + stems[0] + branches[0] + '</span>' +
+    '<span class="tag">月 ' + stems[1] + branches[1] + '</span>' +
+    '<span class="tag">日 ' + stems[2] + branches[2] + '</span>' +
+    '<span class="tag">時 ' + stems[3] + branches[3] + '</span>' +
+    ' 日主:<b>' + day + ELEM[day] + '</b>']);
+
+  // 日主個性
+  sec('日主個性(' + day + ELEM[day] + ')', [DAYMASTER[day]]);
+
+  // 月支性情
+  sec('月支性情(' + month + ')', [MONTH_PERSONALITY[month],
+    '先天較弱部位:' + MONTH_HEALTH[month] + '(宜定期健檢,身體問題以就醫為準)']);
+
+  // 身強身弱
+  let group = Object.keys(STRENGTH[ELEM[day]]).find(g => g.includes(month));
+  const st = STRENGTH[ELEM[day]][group];
+  sec('身強身弱', ['日主 ' + ELEM[day] + ' 生於 ' + month + ' 月 → <b>身' + st + '</b>。' +
+    (st === '強'
+      ? '身強者較能承擔財官,一生官妻財子祿機運較佳;走「弱」之年為走運。'
+      : '身弱者財官反成負擔;走「強」之年為走運,宜穩紮穩打、避免過度擴張。')]);
+
+  // 天干五合 + 多字相同
+  const comboItems = [];
+  for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) {
+    const key = Object.keys(STEM_COMBO).find(k => k.includes(stems[i]) && k.includes(stems[j]) && stems[i] !== stems[j]);
+    if (key) comboItems.push('<span class="tag">' + PILLAR_NAME[i] + '×' + PILLAR_NAME[j] + '</span>' + key + ' ' + STEM_COMBO[key]);
+  }
+  const stemCount = {};
+  stems.forEach(s => stemCount[s] = (stemCount[s] || 0) + 1);
+  Object.entries(stemCount).forEach(([s, n]) => {
+    if (n >= 3) comboItems.push('天干「' + s + '」出現 ' + n + ' 次:命盤天干多字相同,格局特殊,詳見筆記「天干五合」章。');
+  });
+  sec('天干合化', comboItems.length ? comboItems : ['四柱天干無五合。']);
+
+  // 地支互動(含心理狀態)
+  const rel = [];
+  const pair = (i, j, label, text) =>
+    rel.push('<span class="tag">' + PILLAR_NAME[i] + '×' + PILLAR_NAME[j] + '(' + PALACE[i] + '↔' + PALACE[j] + ')</span><b>' + label + '</b>:' + text);
+  for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) {
+    const a = branches[i], b = branches[j];
+    let k = Object.keys(SIX_COMBO).find(x => x.includes(a) && x.includes(b) && a !== b);
+    if (k) pair(i, j, '六合', SIX_COMBO[k] + '。合到哪旺到哪,這兩宮相處融洽、互相幫助。');
+    k = Object.keys(SIX_CLASH).find(x => x.includes(a) && x.includes(b) && a !== b);
+    if (k) pair(i, j, '六沖', SIX_CLASH[k] + '。沖到哪動盪到哪,這兩宮易有衝突與變動。');
+    k = Object.keys(SIX_HARM).find(x => x.includes(a) && x.includes(b) && a !== b);
+    if (k) pair(i, j, '六害', SIX_HARM[k] + '。害到哪收不到成果,這兩宮易有心結、聚少離多。');
+    for (const p of PUNISH) {
+      if (a !== b && p.set.includes(a) && p.set.includes(b))
+        pair(i, j, p.name, p.desc + '。刑到哪鬱悶到哪,這兩宮之間有精神層面的內耗。');
+    }
+    if (a === b && SELF_PUNISH[a]) pair(i, j, '自刑(' + a + a + ')', SELF_PUNISH[a]);
+  }
+  // 三合/三會
+  const bset = branches.join('');
+  Object.entries(TRI_COMBO).forEach(([k, v]) => {
+    const hit = [...k].filter(c => bset.includes(c)).length;
+    if (hit === 3) rel.push('<b>三合 ' + k + '</b> ' + v);
+    else if (hit === 2) rel.push('<b>半合(' + [...k].filter(c => bset.includes(c)).join('') + ')</b> 具' + v.split(':')[0] + '傾向,力量較弱;流年補齊第三字時特別有感。');
+  });
+  Object.entries(TRI_MEET).forEach(([k, v]) => {
+    if ([...k].every(c => bset.includes(c)))
+      rel.push('<b>三會 ' + k + '(' + v + ')</b> 力量大於一切;與日主同類則' + (st === '弱' ? '有利(身弱得幫)' : '不利(身強更旺過頭)') + ',成會之年通常特別有事。');
+  });
+  sec('地支互動與心理狀態', rel.length ? rel : ['四柱地支間無明顯刑沖合害,個性相對平穩、內在衝突少。']);
+
+  // 馬花庫
+  const cnt = s => branches.filter(b => s.includes(b)).length;
+  sec('四馬・四花・四庫', [
+    '<b>驛馬 ' + cnt(HORSE) + ' 顆</b>(行動力):' + HORSE_MSG[cnt(HORSE)],
+    '<b>桃花 ' + cnt(FLOWER) + ' 顆</b>(人緣異性緣):' + FLOWER_MSG[cnt(FLOWER)],
+    '<b>財庫 ' + cnt(VAULT) + ' 顆</b>(聚財力):' + VAULT_MSG[cnt(VAULT)]
+  ]);
+
+  // 十神
+  const tg = [0, 1, 3].map(i => {
+    const g = tenGod(day, stems[i]);
+    return '<span class="tag">' + PILLAR_NAME[i] + '干 ' + stems[i] + '</span><b>' + g + '</b>:' + TEN_GOD_DESC[g];
+  });
+  sec('十神特質(以日主 ' + day + ' 論其他天干)', tg.concat(
+    ['同一十神出現越多次,該特質越明顯;吉凶還須配合身強身弱與喜忌綜合判斷,詳見筆記「十神論斷」章。']));
+
+  out.push('<p class="disclaimer">以上為筆記規則的自動比對結果,僅供參考。完整論斷(宮位六親、流年吉凶、合婚)請見 <a href="eight.html">筆記首頁</a> 各章節。</p>');
+  document.getElementById('result').innerHTML = out.join('');
+}
+
+// ===== 初始化 =====
+[0,1,2,3].forEach(i => {
+  const ss = document.getElementById('s'+i), bs = document.getElementById('b'+i);
+  [...STEMS].forEach(c => ss.add(new Option(c, c)));
+  [...BRANCHES].forEach(c => bs.add(new Option(c, c)));
+});
+document.getElementById('run').addEventListener('click', analyze);
+</script>
+</body>
+</html>
